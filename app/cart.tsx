@@ -17,7 +17,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useCart } from "./context/CartContext";
+import { useCart } from "../context/CartContext";
+import { analyzeCartBundles } from "../constants/bundles";
 
 const { width } = Dimensions.get("window");
 
@@ -68,7 +69,12 @@ export default function CartScreen() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const discount = couponApplied ? Math.round(subtotal * 0.1) : 0;
+
+  const bundleSavings = analyzeCartBundles(cartItems)
+    .filter(b => b.isCompleted)
+    .reduce((sum, b) => sum + b.potentialSavings, 0);
+
+  const discount = (couponApplied ? Math.round(subtotal * 0.1) : 0) + bundleSavings;
   const FREE_DELIVERY_THRESHOLD = 1000;
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : 99;
   const total = subtotal - discount + deliveryFee;
@@ -117,9 +123,12 @@ export default function CartScreen() {
               {cartItems.reduce((sum, item) => sum + item.quantity, 0)} items
             </Text>
           </View>
-          <TouchableOpacity style={styles.headerIconCircle}>
+          <TouchableOpacity 
+            style={styles.headerIconCircle}
+            onPress={() => router.push("/bundle-tracker")}
+          >
             <Ionicons
-              name="heart-outline"
+              name="layers-outline"
               size={18}
               color={COLORS.black}
             />

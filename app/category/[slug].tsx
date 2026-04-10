@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
-import { useSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function CategoryScreen() {
-  const { slug } = useSearchParams<{ slug: string }>();
+  const { slug } = useLocalSearchParams<{ slug: string }>();
 
   return (
     <SafeAreaView style={styles.container}>

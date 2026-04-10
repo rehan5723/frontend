@@ -1,10 +1,10 @@
 import React from 'react';
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter, useSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 export default function CheckoutScreen() {
   const router = useRouter();
-  const { product } = useSearchParams<{ product: string }>();
+  const { product } = useLocalSearchParams<{ product: string }>();
 
   return (
     <SafeAreaView style={styles.container}>

@@ -15,8 +15,9 @@ import { useRouter } from "expo-router";
 
 import { CartToast } from "../../components/cart-toast";
 import { MainNav } from "../../components/main-nav";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../../context/CartContext";
 import { useCartToast } from "../../hooks/use-cart-toast";
+import { PRODUCTS } from "../../constants/products";
 
 const COLORS = {
   bg: "#F6F5F1",
@@ -31,67 +32,15 @@ const COLORS = {
 const filters = [
   { label: "All", value: "all" },
   { label: "Living", value: "sofa" },
-  { label: "Kitchen", value: "kitchen" },
+  { label: "Knives", value: "knife" },
+  { label: "Cookware", value: "cookware" },
+  { label: "Tableware", value: "tableware" },
   { label: "Decor", value: "decor" },
   { label: "Lighting", value: "lighting" },
+  { label: "Outdoor", value: "outdoor" },
 ];
 
-const products = [
-  {
-    id: 301,
-    name: "Cloud Modular Sofa",
-    price: 68000,
-    displayPrice: "Rs 68,000",
-    category: "sofa",
-    tag: "Best Seller",
-    image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=800",
-  },
-  {
-    id: 302,
-    name: "Stoneware Dinner Set",
-    price: 5400,
-    displayPrice: "Rs 5,400",
-    category: "kitchen",
-    tag: "New",
-    image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=800",
-  },
-  {
-    id: 303,
-    name: "Brass Arc Lamp",
-    price: 16400,
-    displayPrice: "Rs 16,400",
-    category: "lighting",
-    tag: "Studio Pick",
-    image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=800",
-  },
-  {
-    id: 304,
-    name: "Mirror Wall Accent",
-    price: 12400,
-    displayPrice: "Rs 12,400",
-    category: "decor",
-    tag: "Curated",
-    image: "https://images.unsplash.com/photo-1618220179428-22790b46a011?q=80&w=800",
-  },
-  {
-    id: 305,
-    name: "Velvet Lounge Chair",
-    price: 21500,
-    displayPrice: "Rs 21,500",
-    category: "sofa",
-    tag: "Limited",
-    image: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=800",
-  },
-  {
-    id: 306,
-    name: "Sculpted Candle Set",
-    price: 1800,
-    displayPrice: "Rs 1,800",
-    category: "decor",
-    tag: "Gift Ready",
-    image: "https://images.unsplash.com/photo-1602523961358-f9f03dd557db?q=80&w=800",
-  },
-];
+const products = PRODUCTS;
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -108,7 +57,9 @@ export default function ExploreScreen() {
       const matchesSearch =
         search.length === 0 ||
         item.name.toLowerCase().includes(search) ||
-        item.tag.toLowerCase().includes(search);
+        (item.tag ?? "").toLowerCase().includes(search) ||
+        item.brand.toLowerCase().includes(search) ||
+        item.style.toLowerCase().includes(search);
 
       return matchesFilter && matchesSearch;
     });
@@ -116,11 +67,11 @@ export default function ExploreScreen() {
 
   const handleAddToCart = (item: (typeof products)[number]) => {
     addToCart({
-      id: item.id,
+      id: item.product_id,
       name: item.name,
-      description: `${item.tag} piece from the explore collection`,
+      description: item.description,
       price: item.price,
-      img: item.image,
+      img: item.img,
       label: item.tag,
     });
     showToast(`${item.name} added to cart`);
@@ -198,32 +149,42 @@ export default function ExploreScreen() {
         </View>
 
         <View style={styles.grid}>
-          {visibleProducts.map((item) => (
-            <View key={item.id} style={styles.card}>
-              <View style={styles.imageWrap}>
-                <Image source={{ uri: item.image }} style={styles.cardImage} />
-                <View style={styles.tagPill}>
-                  <Text style={styles.tagText}>{item.tag}</Text>
+          {visibleProducts.map((item) => {
+            const productSlug = item.name
+              .toLowerCase()
+              .replace(/\s+/g, '-')
+              .replace(/[^a-z0-9-]/g, '');
+            return (
+              <TouchableOpacity
+                key={item.product_id}
+                style={styles.card}
+                onPress={() => router.push(`/product/[slug]?slug=${productSlug}`)}
+                activeOpacity={0.9}>
+                <View style={styles.imageWrap}>
+                  <Image source={{ uri: item.img }} style={styles.cardImage} />
+                  {item.tag && (
+                    <View style={styles.tagPill}>
+                      <Text style={styles.tagText}>{item.tag}</Text>
+                    </View>
+                  )}
                 </View>
-              </View>
-              <Text style={styles.cardTitle}>{item.name}</Text>
-              <Text style={styles.cardPrice}>{item.displayPrice}</Text>
-              <View style={styles.cardFooter}>
-                <TouchableOpacity
-                  style={styles.categoryAction}
-                  onPress={() => router.push(`/category/[slug]?slug=${item.category}`)}
-                  activeOpacity={0.82}>
-                  <Text style={styles.categoryActionText}>Open</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => handleAddToCart(item)}
-                  activeOpacity={0.85}>
-                  <Ionicons name="add" size={16} color={COLORS.black} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
+                <Text style={styles.cardTitle}>{item.name}</Text>
+                <Text style={styles.cardPrice}>{item.displayPrice}</Text>
+                <View style={styles.cardFooter}>
+                  <Text style={styles.categoryActionText}>{item.brand}</Text>
+                  <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleAddToCart(item);
+                    }}
+                    activeOpacity={0.85}>
+                    <Ionicons name="add" size={16} color={COLORS.black} />
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={styles.bottomSpacer} />

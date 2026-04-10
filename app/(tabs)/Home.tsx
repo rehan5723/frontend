@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,9 +15,132 @@ import {
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../../context/CartContext";
+import { PRODUCTS, HOME_CATEGORIES, getProductsForHomeCategory, Product } from "../../constants/products";
 
 const { width } = Dimensions.get("window");
+const ITEM_SIZE = 220;
+
+const heroData = [
+  { id: 1, title: "THE CLOUD", sub: "Spring Collection 2026", img: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1200" },
+  { id: 2, title: "MODERN LIVING", sub: "Elevate your space", img: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1200" },
+  { id: 3, title: "NATURE INSPIRED", sub: "Eco-friendly pieces", img: "https://images.unsplash.com/photo-1540574163026-643ea20ade25?q=80&w=1200" },
+];
+
+function HeroCarousel() {
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef<Animated.FlatList<any>>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    let interval = setInterval(() => {
+      let nextIndex = (currentIndex + 1) % heroData.length;
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      setCurrentIndex(nextIndex);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [currentIndex]);
+
+  const onScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    { useNativeDriver: false }
+  );
+
+  return (
+    <View style={styles.heroWrapper}>
+      <Animated.FlatList
+        ref={flatListRef}
+        data={heroData}
+        keyExtractor={(item) => item.id.toString()}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        onMomentumScrollEnd={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / width);
+          setCurrentIndex(index);
+        }}
+        renderItem={({ item }) => (
+          <View style={styles.hero}>
+            <Image source={{ uri: item.img }} style={styles.heroImage} />
+            <View style={styles.heroOverlay}>
+              <Text style={styles.heroTitle}>{item.title}</Text>
+              <Text style={styles.heroSub}>{item.sub}</Text>
+            </View>
+          </View>
+        )}
+      />
+      <View style={styles.heroDotsContainer}>
+        {heroData.map((_, i) => {
+          const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
+          const dotWidth = scrollX.interpolate({
+            inputRange,
+            outputRange: [8, 18, 8],
+            extrapolate: "clamp",
+          });
+          const opacity = scrollX.interpolate({
+            inputRange,
+            outputRange: [0.3, 1, 0.3],
+            extrapolate: "clamp",
+          });
+          return (
+            <Animated.View
+              key={i}
+              style={[styles.heroDot, { width: dotWidth, opacity }]}
+            />
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function AnimatedProductList({ displayedProducts }: { displayedProducts: any[] }) {
+  const scrollX = useRef(new Animated.Value(0)).current;
+
+  return (
+    <Animated.FlatList
+      data={displayedProducts}
+      keyExtractor={(item, index) => index.toString()}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      snapToInterval={ITEM_SIZE + 20}
+      decelerationRate="fast"
+      scrollEventThrottle={16}
+      contentContainerStyle={{ paddingRight: width / 2 }}
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+        { useNativeDriver: true }
+      )}
+      renderItem={({ item, index }) => {
+        const inputRange = [
+          (index - 1) * (ITEM_SIZE + 20),
+          index * (ITEM_SIZE + 20),
+          (index + 1) * (ITEM_SIZE + 20),
+        ];
+
+        const scale = scrollX.interpolate({
+          inputRange,
+          outputRange: [0.85, 1, 0.85],
+          extrapolate: "clamp",
+        });
+
+        const opacity = scrollX.interpolate({
+          inputRange,
+          outputRange: [0.6, 1, 0.6],
+          extrapolate: "clamp",
+        });
+
+        return (
+          <Animated.View style={{ opacity, transform: [{ scale }] }}>
+            <ProductCard product={item} />
+          </Animated.View>
+        );
+      }}
+    />
+  );
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -26,16 +149,9 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState("home");
   const [activeCategory, setActiveCategory] = useState("Sofa");
 
-  const categories = ["Sofa", "Kitchen", "Decor", "Lighting", "Outdoor"];
+  const categories = HOME_CATEGORIES;
 
-  const products = [
-    { name: "Minimal Chair", price: "₹7,999", img: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=400", category: "Sofa" },
-    { name: "Ceramic Vase", price: "₹2,499", img: "https://images.unsplash.com/photo-1581783898377-1c85bf937427?q=80&w=400", category: "Decor" },
-    { name: "Pendant Light", price: "₹5,299", img: "https://images.unsplash.com/photo-1543055868-96bbbf829d67?q=80&w=400", category: "Lighting" },
-    { name: "Oak Table", price: "₹12,499", img: "https://images.unsplash.com/photo-1530018607912-eff2df114f11?q=80&w=400", category: "Outdoor" },
-  ];
-
-  const displayedProducts = products.filter((product) => product.category === activeCategory);
+  const displayedProducts = getProductsForHomeCategory(activeCategory);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,27 +205,13 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        {/* HERO */}
-        <View style={styles.hero}>
-          <Image
-            source={{ uri: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1200" }}
-            style={styles.heroImage}
-          />
-          <View style={styles.heroOverlay}>
-            <Text style={styles.heroTitle}>THE CLOUD</Text>
-            <Text style={styles.heroSub}>Spring Collection 2026</Text>
-          </View>
-        </View>
+        {/* HERO CAROUSEL */}
+        <HeroCarousel />
 
         {/* PRODUCTS */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>New Arrivals</Text>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {displayedProducts.map((product, i) => (
-              <ProductCard key={i} product={product} />
-            ))}
-          </ScrollView>
+          <AnimatedProductList displayedProducts={displayedProducts} />
         </View>
 
         <View style={{ height: 80 }} />
@@ -121,7 +223,7 @@ export default function HomeScreen() {
           [
             { name: "home" as const, key: "home", route: "/Home" as const },
             { name: "compass" as const, key: "explore", route: "/explore" as const },
-            { name: "heart" as const, key: "wishlist", route: "/wishlist" as const },
+            { name: "layers" as const, key: "bundle-tracker", route: "/bundle-tracker" as const },
             { name: "user" as const, key: "profile", route: "/profile" as const },
           ] as const
         ).map((item) => (
@@ -147,7 +249,7 @@ export default function HomeScreen() {
   );
 }
 
-function ProductCard({ product }: { product: { name: string; price: string; img: string } }) {
+function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
   const productSlug = product.name
     .toLowerCase()
@@ -216,7 +318,7 @@ function ProductCard({ product }: { product: { name: string; price: string; img:
       >
         <Image source={{ uri: product.img }} style={styles.cardImage} />
         <Text style={styles.cardName}>{product.name}</Text>
-        <Text style={styles.cardPrice}>{product.price}</Text>
+        <Text style={styles.cardPrice}>{product.displayPrice}</Text>
       </Animated.View>
     </TouchableOpacity>
   );
@@ -277,19 +379,41 @@ const styles = StyleSheet.create({
   categoryActive: { backgroundColor: "#000" },
   categoryText: { color: "#666" },
   categoryTextActive: { color: "#fff" },
-
-  hero: { height: 300, margin: 20, borderRadius: 20, overflow: "hidden" },
-  heroImage: { width: "100%", height: "100%" },
-  heroOverlay: { position: "absolute", bottom: 20, left: 20 },
+  
+  heroWrapper: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  hero: { 
+    width: width,
+    alignItems: 'center',
+  },
+  heroImage: { 
+    width: width - 40, 
+    height: 300, 
+    borderRadius: 20, 
+  },
+  heroOverlay: { position: "absolute", bottom: 20, left: 40 },
   heroTitle: { color: "#fff", fontSize: 22, fontWeight: "700" },
   heroSub: { color: "#fff", fontSize: 12 },
+  heroDotsContainer: {
+    flexDirection: "row",
+    position: "absolute",
+    bottom: 15,
+    alignSelf: "center",
+  },
+  heroDot: {
+    height: 6,
+    borderRadius: 4,
+    backgroundColor: "#fff",
+    marginHorizontal: 4,
+  },
 
-  section: { marginTop: 20 },
+  section: { marginTop: 10 },
   sectionTitle: { fontSize: 20, fontWeight: "700", marginLeft: 20, marginBottom: 10 },
 
   card: {
-    width: 180,
-    marginLeft: 20,
+    width: ITEM_SIZE,
     backgroundColor: "#fff",
     borderRadius: 20,
     padding: 10,
@@ -298,9 +422,9 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     elevation: 8,
   },
-  cardImage: { height: 180, borderRadius: 15 },
-  cardName: { marginTop: 10, fontWeight: "600" },
-  cardPrice: { color: "#666" },
+  cardImage: { height: 200, borderRadius: 15 },
+  cardName: { marginTop: 10, fontWeight: "600", fontSize: 16 },
+  cardPrice: { color: "#666", marginTop: 4 },
 
   nav: {
     flexDirection: "row",
