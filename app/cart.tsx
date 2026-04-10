@@ -1,24 +1,23 @@
-import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  Animated,
-  StatusBar,
-  TextInput,
-  Platform,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useCart } from "../context/CartContext";
+import React, { useRef, useState } from "react";
+import {
+  Animated,
+  Dimensions,
+  Image,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { analyzeCartBundles } from "../constants/bundles";
+import { useCart } from "../context/CartContext";
 
 const { width } = Dimensions.get("window");
 
@@ -123,7 +122,7 @@ export default function CartScreen() {
               {cartItems.reduce((sum, item) => sum + item.quantity, 0)} items
             </Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.headerIconCircle}
             onPress={() => router.push("/bundle-tracker")}
           >
@@ -1390,7 +1389,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: Platform.OS === "android" ? 20 : 30,
   },
-  
+
   checkoutLeft: {},
   checkoutTotal: {
     fontSize: 20,

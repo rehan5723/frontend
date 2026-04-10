@@ -430,10 +430,10 @@ export function getProductsByCategory(category: string): Product[] {
 }
 
 /** Category display mapping for Home page */
-export const HOME_CATEGORIES = ["Sofa", "Kitchen", "Decor", "Lighting", "Outdoor"];
+export const HOME_CATEGORIES = ["Furniture", "Kitchen", "Decor", "Lighting", "Outdoor"];
 
 export const CATEGORY_MAP: Record<string, string> = {
-  Sofa: "sofa",
+  Furniture: "sofa",
   Kitchen: "knife,cookware,tableware",
   Decor: "decor",
   Lighting: "lighting",

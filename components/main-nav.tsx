@@ -1,17 +1,17 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 type MainNavProps = {
-  activeRoute: "home" | "explore" | "wishlist" | "profile";
+  activeRoute: "home" | "explore" | "chat" | "profile";
 };
 
 const navItems = [
-  { key: "home", label: "Home", icon: "home", route: "/Home" },
-  { key: "explore", label: "Explore", icon: "compass", route: "/explore" },
-  { key: "wishlist", label: "Wishlist", icon: "heart", route: "/wishlist" },
-  { key: "profile", label: "Profile", icon: "user", route: "/profile" },
+  { key: "home", label: "Home", icon: "home", route: "/Home", iconSet: "feather" },
+  { key: "explore", label: "Explore", icon: "compass", route: "/explore", iconSet: "feather" },
+  { key: "chat", label: "Assistant", icon: "chatbubble-ellipses-outline", route: "/chatbot", iconSet: "ionicons" },
+  { key: "profile", label: "Profile", icon: "user", route: "/profile", iconSet: "feather" },
 ] as const;
 
 export function MainNav({ activeRoute }: MainNavProps) {
@@ -26,14 +26,23 @@ export function MainNav({ activeRoute }: MainNavProps) {
           onPress={() => router.push(item.route)}
           activeOpacity={0.8}
         >
-          <Feather
-            name={item.icon}
-            size={20}
-            color={activeRoute === item.key ? "#000" : "#999"}
-          />
+          {item.iconSet === "ionicons" ? (
+            <Ionicons
+              name={item.icon as any}
+              size={20}
+              color={activeRoute === item.key ? "#AF9461" : "#999"}
+            />
+          ) : (
+            <Feather
+              name={item.icon as any}
+              size={20}
+              color={activeRoute === item.key ? "#000" : "#999"}
+            />
+          )}
           <Text style={[styles.label, activeRoute === item.key && styles.activeLabel]}>
             {item.label}
           </Text>
+          {activeRoute === item.key && <View style={styles.activeDot} />}
         </TouchableOpacity>
       ))}
     </View>
@@ -60,5 +69,12 @@ const styles = StyleSheet.create({
   activeLabel: {
     color: "#000",
     fontWeight: "700",
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#AF9461",
+    marginTop: 2,
   },
 });

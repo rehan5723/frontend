@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   StatusBar,
   Animated,
   PanResponder,
+  Platform,
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -142,16 +143,166 @@ function AnimatedProductList({ displayedProducts }: { displayedProducts: any[] }
   );
 }
 
+/* ─── SEARCH OVERLAY ───────────────────────────────────── */
+function SearchOverlay({
+  searchText,
+  onClose,
+}: {
+  searchText: string;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  const results = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (q.length === 0) return [];
+    return PRODUCTS.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q) ||
+        p.style.toLowerCase().includes(q) ||
+        (p.tag ?? "").toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+    ).slice(0, 6);
+  }, [searchText]);
+
+  useEffect(() => {
+    Animated.spring(slideAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 68,
+      friction: 12,
+    }).start();
+  }, []);
+
+  const translateY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-20, 0],
+  });
+
+  const opacity = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  return (
+    <Animated.View
+      style={[styles.searchOverlay, { opacity, transform: [{ translateY }] }]}
+    >
+      {results.length > 0 ? (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          style={styles.searchResultsList}
+        >
+          <Text style={styles.searchResultsTitle}>
+            {results.length} result{results.length !== 1 ? "s" : ""}
+          </Text>
+          {results.map((product) => {
+            const productSlug = product.name
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .replace(/[^a-z0-9-]/g, "");
+            return (
+              <TouchableOpacity
+                key={product.product_id}
+                style={styles.searchResultItem}
+                onPress={() => {
+                  onClose();
+                  router.push(`/product/[slug]?slug=${productSlug}`);
+                }}
+                activeOpacity={0.8}
+              >
+                <Image
+                  source={{ uri: product.img }}
+                  style={styles.searchResultImage}
+                />
+                <View style={styles.searchResultInfo}>
+                  <Text style={styles.searchResultName} numberOfLines={1}>
+                    {product.name}
+                  </Text>
+                  <Text style={styles.searchResultBrand}>{product.brand}</Text>
+                  <Text style={styles.searchResultPrice}>
+                    {product.displayPrice}
+                  </Text>
+                </View>
+                <View style={styles.searchResultArrow}>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color="#999"
+                  />
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      ) : (
+        <View style={styles.searchEmptyState}>
+          <Ionicons name="search-outline" size={32} color="#ccc" />
+          <Text style={styles.searchEmptyTitle}>No results found</Text>
+          <Text style={styles.searchEmptySubtitle}>
+            Try searching for "sofa", "lamp", or "vase"
+          </Text>
+        </View>
+      )}
+    </Animated.View>
+  );
+}
+
 export default function HomeScreen() {
   const router = useRouter();
   const { totalItemCount } = useCart();
   const [searchText, setSearchText] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
-  const [activeCategory, setActiveCategory] = useState("Sofa");
+  const [activeCategory, setActiveCategory] = useState("Furniture");
+  const searchBorderAnim = useRef(new Animated.Value(0)).current;
+  const fabAnim = useRef(new Animated.Value(0)).current;
 
   const categories = HOME_CATEGORIES;
-
   const displayedProducts = getProductsForHomeCategory(activeCategory);
+
+  const showSearchOverlay = isSearchFocused && searchText.trim().length > 0;
+
+  useEffect(() => {
+    Animated.spring(fabAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      delay: 500,
+    }).start();
+  }, []);
+
+  const handleSearchFocus = () => {
+    setIsSearchFocused(true);
+    Animated.spring(searchBorderAnim, {
+      toValue: 1,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const handleSearchBlur = () => {
+    // Small delay to allow tap on search results
+    setTimeout(() => {
+      setIsSearchFocused(false);
+      Animated.spring(searchBorderAnim, {
+        toValue: 0,
+        useNativeDriver: false,
+      }).start();
+    }, 150);
+  };
+
+  const searchBorderColor = searchBorderAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["#F2F2F7", "#AF9461"],
+  });
+
+  const searchElevation = searchBorderAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 8],
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -176,16 +327,52 @@ export default function HomeScreen() {
 
       {/* SEARCH */}
       <View style={styles.searchWrapper}>
-        <View style={styles.searchBox}>
-          <Feather name="search" size={16} color="#999" />
+        <Animated.View
+          style={[
+            styles.searchBox,
+            {
+              borderColor: searchBorderColor,
+              borderWidth: 1.5,
+              backgroundColor: isSearchFocused ? "#fff" : "#F2F2F7",
+            },
+          ]}
+        >
+          <Feather
+            name="search"
+            size={16}
+            color={isSearchFocused ? "#AF9461" : "#999"}
+          />
           <TextInput
             placeholder="Search luxury collection..."
             placeholderTextColor="#999"
             style={styles.searchInput}
             value={searchText}
             onChangeText={setSearchText}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
           />
-        </View>
+          {searchText.length > 0 && (
+            <TouchableOpacity
+              onPress={() => {
+                setSearchText("");
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close-circle" size={18} color="#999" />
+            </TouchableOpacity>
+          )}
+        </Animated.View>
+
+        {/* Search Results Overlay */}
+        {showSearchOverlay && (
+          <SearchOverlay
+            searchText={searchText}
+            onClose={() => {
+              setSearchText("");
+              setIsSearchFocused(false);
+            }}
+          />
+        )}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -216,6 +403,33 @@ export default function HomeScreen() {
 
         <View style={{ height: 80 }} />
       </ScrollView>
+
+      {/* 🔥 CHATBOT FAB */}
+      <Animated.View
+        style={[
+          styles.fabContainer,
+          {
+            transform: [
+              {
+                scale: fabAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 1],
+                }),
+              },
+            ],
+            opacity: fabAnim,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push("/chatbot")}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
+        </TouchableOpacity>
+        <View style={styles.fabPulse} />
+      </Animated.View>
 
       {/* 🔥 APPLE NAVBAR */}
       <View style={styles.nav}>
@@ -357,16 +571,108 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 
-  searchWrapper: { paddingHorizontal: 20, marginBottom: 10 },
+  searchWrapper: { paddingHorizontal: 20, marginBottom: 10, zIndex: 100 },
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F2F2F7",
     paddingHorizontal: 12,
-    borderRadius: 10,
-    height: 40,
+    borderRadius: 14,
+    height: 44,
   },
-  searchInput: { marginLeft: 10, flex: 1 },
+  searchInput: { marginLeft: 10, flex: 1, fontSize: 15, color: "#000" },
+
+  /* Search Overlay */
+  searchOverlay: {
+    position: "absolute",
+    top: 52,
+    left: 20,
+    right: 20,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.08)",
+    maxHeight: 380,
+    zIndex: 200,
+    overflow: "hidden",
+    ...Platform.select({
+      web: { boxShadow: "0px 12px 24px rgba(0,0,0,0.12)" } as any,
+      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.12, shadowRadius: 24 },
+      android: { elevation: 16 },
+    }),
+  },
+  searchResultsList: {
+    padding: 8,
+  },
+  searchResultsTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2,
+    color: "#AF9461",
+    textTransform: "uppercase",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  searchResultItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    marginBottom: 2,
+  },
+  searchResultImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: "#F2F2F7",
+  },
+  searchResultInfo: {
+    flex: 1,
+    marginLeft: 14,
+  },
+  searchResultName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#161616",
+  },
+  searchResultBrand: {
+    fontSize: 12,
+    color: "#7B7B75",
+    marginTop: 2,
+  },
+  searchResultPrice: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#AF9461",
+    marginTop: 3,
+  },
+  searchResultArrow: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#F2F2F7",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  searchEmptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  searchEmptyTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#161616",
+    marginTop: 12,
+  },
+  searchEmptySubtitle: {
+    fontSize: 13,
+    color: "#7B7B75",
+    marginTop: 6,
+    textAlign: "center",
+  },
 
   categoryRow: { paddingLeft: 20, marginVertical: 10 },
   category: {
@@ -417,10 +723,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 20,
     padding: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 15,
-    elevation: 8,
+    ...Platform.select({
+      web: { boxShadow: "0px 4px 15px rgba(0,0,0,0.15)" } as any,
+      ios: { shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 15 },
+      android: { elevation: 8 },
+    }),
   },
   cardImage: { height: 200, borderRadius: 15 },
   cardName: { marginTop: 10, fontWeight: "600", fontSize: 16 },
@@ -469,4 +776,36 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   dotActive: { opacity: 1 },
+
+  /* FAB */
+  fabContainer: {
+    position: "absolute",
+    bottom: 80,
+    right: 22,
+    zIndex: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fab: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#161616",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 51,
+    ...Platform.select({
+      web: { boxShadow: "0px 6px 12px rgba(0,0,0,0.25)" } as any,
+      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 12 },
+      android: { elevation: 10 },
+    }),
+  },
+  fabPulse: {
+    position: "absolute",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(175,148,97,0.2)",
+    zIndex: 50,
+  },
 });

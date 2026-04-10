@@ -25,6 +25,7 @@ export default function RootLayout() {
           <Stack.Screen name="checkout" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
           <Stack.Screen name="product/[slug]" options={{ headerShown: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="category/[slug]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+          <Stack.Screen name="chatbot" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

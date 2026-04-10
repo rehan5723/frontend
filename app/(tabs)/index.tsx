@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
   ImageBackground,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useFonts } from "expo-font";
@@ -138,10 +139,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     lineHeight: 60,
     marginBottom: 50,
-
-    textShadowColor: "rgba(0,0,0,0.5)",
-    textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 10,
+    ...Platform.select({
+      web: { textShadow: "0px 4px 10px rgba(0,0,0,0.5)" } as any,
+      default: {
+        textShadowColor: "rgba(0,0,0,0.5)",
+        textShadowOffset: { width: 0, height: 4 },
+        textShadowRadius: 10,
+      },
+    }),
   },
 
   cursiveBrand: {
@@ -162,10 +167,14 @@ const styles = StyleSheet.create({
     fontFamily: "Garamond",
     color: "#fff",
     lineHeight: 42,
-
-    textShadowColor: "rgba(0,0,0,0.6)",
-    textShadowOffset: { width: 0, height: 3 },
-    textShadowRadius: 8,
+    ...Platform.select({
+      web: { textShadow: "0px 3px 8px rgba(0,0,0,0.6)" } as any,
+      default: {
+        textShadowColor: "rgba(0,0,0,0.6)",
+        textShadowOffset: { width: 0, height: 3 },
+        textShadowRadius: 8,
+      },
+    }),
   },
 
   highlight: {
