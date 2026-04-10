@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,10 +11,27 @@ import {
   ScrollView
 } from "react-native";
 
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+
+WebBrowser.maybeCompleteAuthSession();
+
 export default function SignupScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+
+  // 🔥 Google Auth
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    // expoClientId: "YOUR_EXPO_CLIENT_ID", // 👈 replace this
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      console.log("Google Login Success:", response.authentication);
+    }
+  }, [response]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -29,17 +46,18 @@ export default function SignupScreen() {
             <Text style={styles.title}>Join the Circle</Text>
             <View style={styles.accentLine} />
             <Text style={styles.subtitle}>
-              Create an account for early access to collections and personalized suggestions.
+              Early access to curated collections and intelligent shopping.
             </Text>
           </View>
 
-          {/* Form Fields */}
+          {/* Form */}
           <View style={styles.form}>
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>FULL NAME</Text>
               <TextInput 
-                style={styles.input} 
-                placeholder="Enter your name" 
+                style={styles.input}
+                placeholder="Enter your name"
                 placeholderTextColor="#A0A0A0"
                 value={name}
                 onChangeText={setName}
@@ -49,8 +67,8 @@ export default function SignupScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>EMAIL ADDRESS</Text>
               <TextInput 
-                style={styles.input} 
-                placeholder="rehan@example.com" 
+                style={styles.input}
+                placeholder="rehan@example.com"
                 placeholderTextColor="#A0A0A0"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -60,29 +78,63 @@ export default function SignupScreen() {
             </View>
 
             <View style={styles.inputGroup}>
+              <Text style={styles.label}>MOBILE NUMBER</Text>
+              <TextInput 
+                style={styles.input}
+                placeholder="+91 98765 43210"
+                placeholderTextColor="#A0A0A0"
+                keyboardType="phone-pad"
+                value={phone}
+                onChangeText={setPhone}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
               <Text style={styles.label}>PASSWORD</Text>
               <TextInput 
-                style={styles.input} 
-                placeholder="••••••••" 
+                style={styles.input}
+                placeholder="••••••••"
                 placeholderTextColor="#A0A0A0"
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
               />
             </View>
+
           </View>
 
-          {/* Actions */}
+          {/* Footer */}
           <View style={styles.footer}>
-            <TouchableOpacity activeOpacity={0.9} style={styles.primaryButton}>
+            
+            {/* Create Account */}
+            <TouchableOpacity style={styles.primaryButton}>
               <Text style={styles.buttonText}>CREATE ACCOUNT</Text>
             </TouchableOpacity>
 
+            {/* Divider */}
+            <View style={styles.divider}>
+              <View style={styles.line} />
+              <Text style={styles.orText}>OR</Text>
+              <View style={styles.line} />
+            </View>
+
+            {/* Google Button */}
+            <TouchableOpacity 
+              style={styles.googleButton}
+              onPress={() => promptAsync()}
+            >
+              <Text style={styles.googleIcon}>🔴</Text>
+              <Text style={styles.googleText}>Continue with Google</Text>
+            </TouchableOpacity>
+
+            {/* Login */}
             <TouchableOpacity style={styles.secondaryAction}>
               <Text style={styles.secondaryText}>
-                Already have an account? <Text style={styles.boldText}>Sign In</Text>
+                Already have an account?{" "}
+                <Text style={styles.boldText}>Sign In</Text>
               </Text>
             </TouchableOpacity>
+
           </View>
 
         </ScrollView>
@@ -92,11 +144,11 @@ export default function SignupScreen() {
 }
 
 const COLORS = {
-  bg: "#F8F8F7",
-  black: "#1A1A1A",
+  bg: "#F7F5F0",
+  black: "#111111",
   gold: "#AF9461",
   textSecondary: "#8E8E8E",
-  border: "#E0E0E0"
+  border: "#E5E5E5"
 };
 
 const styles = StyleSheet.create({
@@ -104,81 +156,135 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.bg,
   },
+
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 35,
-    paddingTop: 60,
+    paddingTop: 70,
     paddingBottom: 40,
   },
+
   header: {
-    marginBottom: 50,
+    marginBottom: 60,
   },
+
   title: {
-    fontSize: 32,
+    fontSize: 36,
     fontFamily: "serif",
     color: COLORS.black,
-    marginBottom: 15,
+    marginBottom: 18,
   },
+
   accentLine: {
-    width: 40,
+    width: 50,
     height: 1,
     backgroundColor: COLORS.gold,
-    marginBottom: 20,
+    marginBottom: 22,
   },
+
   subtitle: {
     fontSize: 14,
     color: COLORS.textSecondary,
     lineHeight: 22,
-    letterSpacing: 0.3,
   },
+
   form: {
-    gap: 35, // Spacious gaps between inputs
+    gap: 40,
   },
+
   inputGroup: {
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
-    paddingBottom: 10,
+    paddingBottom: 12,
   },
+
   label: {
     fontSize: 10,
     letterSpacing: 2,
     color: COLORS.gold,
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: 10,
   },
+
   input: {
-    fontSize: 16,
+    fontSize: 17,
     color: COLORS.black,
-    paddingVertical: 5,
   },
+
   footer: {
-    marginTop: 60,
+    marginTop: 70,
     alignItems: "center",
   },
+
   primaryButton: {
     backgroundColor: COLORS.black,
     width: "100%",
     paddingVertical: 20,
-    borderRadius: 2,
     alignItems: "center",
-    marginBottom: 25,
+    marginBottom: 30,
   },
+
   buttonText: {
     color: "#FFF",
     fontSize: 12,
     fontWeight: "700",
-    letterSpacing: 3,
+    letterSpacing: 4,
   },
+
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 25,
+  },
+
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.border,
+  },
+
+  orText: {
+    marginHorizontal: 10,
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    letterSpacing: 2,
+  },
+
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 16,
+    borderRadius: 6,
+    width: "100%",
+    marginBottom: 25,
+    gap: 10,
+  },
+
+  googleIcon: {
+    fontSize: 16,
+  },
+
+  googleText: {
+    fontSize: 14,
+    color: "#444",
+    fontWeight: "500",
+  },
+
   secondaryAction: {
     padding: 10,
   },
+
   secondaryText: {
     fontSize: 13,
     color: COLORS.textSecondary,
-    letterSpacing: 0.5,
   },
+
   boldText: {
     color: COLORS.black,
     fontWeight: "700",
-  }
+  },
 });

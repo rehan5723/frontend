@@ -8,38 +8,37 @@ import {
   StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useFonts } from "expo-font";
 
 export default function LandingScreen() {
   const router = useRouter();
 
+  // 🔥 Load Garamond fonts
+  const [fontsLoaded] = useFonts({
+    "Garamond": require("../../assets/fonts/EBGaramond-Regular.ttf"),
+    "Garamond-Italic": require("../../assets/fonts/EBGaramond-Italic.ttf")
+  });
+
+  if (!fontsLoaded) return null;
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <TouchableOpacity><Text style={styles.icon}>🔍</Text></TouchableOpacity>
-        <TouchableOpacity>
-          <View>
-            <Text style={styles.icon}>🛒</Text>
-            <View style={styles.dot} />
-          </View>
-        </TouchableOpacity>
-      </View>
 
       {/* Center Content */}
       <View style={styles.content}>
         <View style={styles.accentLine} />
         
         <Text style={styles.brand}>
-          Williams{"\n"}<Text style={styles.cursiveBrand}>Sonoma</Text>
+          Williams{"\n"}
+          <Text style={styles.cursiveBrand}>Sonoma</Text>
         </Text>
 
         <View style={styles.quoteContainer}>
-           <Text style={styles.tagline}>
-             “Shop homes.{"\n"}
-             <Text style={styles.cursiveTagline}>Not just products.”</Text>
-           </Text>
+          <Text style={styles.tagline}>
+            “Shop homes.{"\n"}
+            <Text style={styles.cursiveTagline}>Not just products.”</Text>
+          </Text>
         </View>
 
         <Text style={styles.subtext}>
@@ -56,17 +55,20 @@ export default function LandingScreen() {
         >
           <Text style={styles.buttonText}>Enter the Collection      →</Text>
         </TouchableOpacity>
-        <Text style={styles.footerLegal}>SINCE 1956 • SONOMA, CALIFORNIA</Text>
+
+        <Text style={styles.footerLegal}>
+          SINCE 1956 • SONOMA, CALIFORNIA
+        </Text>
       </View>
     </SafeAreaView>
   );
 }
 
 const COLORS = {
-  bg: "#FDFDFB", // Brighter, cleaner paper-white
+  bg: "#F7F5F0", // Original warm luxury tone
   gold: "#AF9461",
-  black: "#1A1A1A",
-  textSecondary: "#8E8E8E",
+  black: "#111111",
+  textSecondary: "#9A9A9A",
 };
 
 const styles = StyleSheet.create({
@@ -74,99 +76,91 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.bg,
   },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: 25,
-    paddingTop: 20,
-    gap: 25,
-  },
-  icon: {
-    fontSize: 20,
-    color: COLORS.black,
-  },
-  dot: {
-    position: 'absolute',
-    right: -2,
-    top: -2,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.gold,
-  },
+
   content: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: 42,
   },
+
   accentLine: {
-    width: 40,
+    width: 50,
     height: 1,
     backgroundColor: COLORS.gold,
-    marginBottom: 30,
-  },
-  brand: {
-    fontSize: 48, // Slightly larger
-    color: COLORS.black,
-    fontFamily: "serif",
     marginBottom: 40,
-    lineHeight: 52,
-    fontWeight: "300",
   },
+
+  brand: {
+    fontSize: 60,
+    color: COLORS.black,
+    fontFamily: "Garamond",
+    lineHeight: 60,
+    letterSpacing: 1,
+    marginBottom: 50,
+  },
+
   cursiveBrand: {
-    fontStyle: "italic", // Creates the cursive luxury feel
+    fontFamily: "Garamond-Italic",
     color: COLORS.gold,
-    fontWeight: "400",
+    fontSize: 70,
   },
+
   quoteContainer: {
     borderLeftWidth: 1,
     borderLeftColor: COLORS.gold,
-    paddingLeft: 20,
-    marginBottom: 20,
+    paddingLeft: 22,
+    marginBottom: 25,
   },
+
   tagline: {
-    fontSize: 26,
-    lineHeight: 36,
+    fontSize: 40,
+    lineHeight: 50,
     color: COLORS.black,
-    fontFamily: "serif",
-    fontWeight: "300",
+    fontFamily: "Garamond-Italic",
   },
+
   cursiveTagline: {
-    fontStyle: "italic",
-    fontSize: 30, // Cursive looks better slightly larger
+    fontFamily: "Garamond-Italic",
+    fontSize: 28,
+    letterSpacing: 0.5,
     color: COLORS.black,
   },
+
   subtext: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.textSecondary,
-    letterSpacing: 2,
+    letterSpacing: 3,
     textTransform: "uppercase",
-    marginTop: 10,
+    marginTop: 14,
   },
+
   bottom: {
-    paddingHorizontal: 30,
-    paddingBottom: 40,
-    alignItems: 'center',
-  },
-  button: {
-    backgroundColor: COLORS.black,
-    width: '100%',
-    paddingVertical: 18,
-    borderRadius: 0, // Sharp edges = higher luxury
+    paddingHorizontal: 32,
+    paddingBottom: 45,
     alignItems: "center",
   },
+
+  button: {
+    backgroundColor: COLORS.black,
+    width: "100%",
+    paddingVertical: 20,
+    borderRadius: 0,
+    alignItems: "center",
+  },
+
   buttonText: {
     color: "#fff",
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "600",
     letterSpacing: 4,
     textTransform: "uppercase",
   },
+
   footerLegal: {
-    marginTop: 25,
+    marginTop: 28,
     fontSize: 8,
     letterSpacing: 3,
     color: COLORS.textSecondary,
     textTransform: "uppercase",
-  }
+  },
 });
