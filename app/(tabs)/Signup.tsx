@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,28 +10,20 @@ import {
   Platform,
   ScrollView
 } from "react-native";
+import { useRouter } from "expo-router";
 
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
+// ❌ AUTH DISABLED
+// import * as WebBrowser from "expo-web-browser";
+// import * as Google from "expo-auth-session/providers/google";
 
-WebBrowser.maybeCompleteAuthSession();
+// WebBrowser.maybeCompleteAuthSession();
 
 export default function SignupScreen() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-
-  // 🔥 Google Auth
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    // expoClientId: "YOUR_EXPO_CLIENT_ID", // 👈 replace this
-  });
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      console.log("Google Login Success:", response.authentication);
-    }
-  }, [response]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -107,7 +99,16 @@ export default function SignupScreen() {
           <View style={styles.footer}>
             
             {/* Create Account */}
-            <TouchableOpacity style={styles.primaryButton}>
+            <TouchableOpacity 
+              style={styles.primaryButton}
+              onPress={() => {
+                if (!name || !email || !password) {
+                  alert('Please fill name, email, and password.');
+                  return;
+                }
+                router.push('/Home');
+              }}
+            >
               <Text style={styles.buttonText}>CREATE ACCOUNT</Text>
             </TouchableOpacity>
 
@@ -118,17 +119,20 @@ export default function SignupScreen() {
               <View style={styles.line} />
             </View>
 
-            {/* Google Button */}
+            {/* Google Button (Fake for now) */}
             <TouchableOpacity 
               style={styles.googleButton}
-              onPress={() => promptAsync()}
+              onPress={() => alert("Google Sign-In (Disabled for now)")}
             >
               <Text style={styles.googleIcon}>🔴</Text>
               <Text style={styles.googleText}>Continue with Google</Text>
             </TouchableOpacity>
 
             {/* Login */}
-            <TouchableOpacity style={styles.secondaryAction}>
+            <TouchableOpacity
+              style={styles.secondaryAction}
+              onPress={() => router.push('/Login')}
+            >
               <Text style={styles.secondaryText}>
                 Already have an account?{" "}
                 <Text style={styles.boldText}>Sign In</Text>

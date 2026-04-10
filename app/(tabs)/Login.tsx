@@ -9,8 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -66,11 +68,24 @@ export default function LoginScreen() {
 
           {/* Actions */}
           <View style={styles.footer}>
-            <TouchableOpacity activeOpacity={0.9} style={styles.primaryButton}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.primaryButton}
+              onPress={() => {
+                if (!email || !password) {
+                  alert('Enter email and password to sign in.');
+                  return;
+                }
+                router.push('/Home');
+              }}
+            >
               <Text style={styles.buttonText}>SIGN IN</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.secondaryAction}>
+            <TouchableOpacity
+              style={styles.secondaryAction}
+              onPress={() => router.push('/Signup')}
+            >
               <Text style={styles.secondaryText}>
                 New to the circle? <Text style={styles.boldText}>Join Now</Text>
               </Text>

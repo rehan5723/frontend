@@ -1,112 +1,469 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useMemo, useState } from "react";
+import {
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { CartToast } from "../../components/cart-toast";
+import { MainNav } from "../../components/main-nav";
+import { useCart } from "../context/CartContext";
+import { useCartToast } from "../../hooks/use-cart-toast";
 
-export default function TabTwoScreen() {
+const COLORS = {
+  bg: "#F6F5F1",
+  white: "#FFFFFF",
+  gold: "#AF9461",
+  goldSoft: "rgba(175,148,97,0.12)",
+  black: "#161616",
+  textSecondary: "#7B7B75",
+  border: "rgba(0,0,0,0.06)",
+};
+
+const filters = [
+  { label: "All", value: "all" },
+  { label: "Living", value: "sofa" },
+  { label: "Kitchen", value: "kitchen" },
+  { label: "Decor", value: "decor" },
+  { label: "Lighting", value: "lighting" },
+];
+
+const products = [
+  {
+    id: 301,
+    name: "Cloud Modular Sofa",
+    price: 68000,
+    displayPrice: "Rs 68,000",
+    category: "sofa",
+    tag: "Best Seller",
+    image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=800",
+  },
+  {
+    id: 302,
+    name: "Stoneware Dinner Set",
+    price: 5400,
+    displayPrice: "Rs 5,400",
+    category: "kitchen",
+    tag: "New",
+    image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=800",
+  },
+  {
+    id: 303,
+    name: "Brass Arc Lamp",
+    price: 16400,
+    displayPrice: "Rs 16,400",
+    category: "lighting",
+    tag: "Studio Pick",
+    image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=800",
+  },
+  {
+    id: 304,
+    name: "Mirror Wall Accent",
+    price: 12400,
+    displayPrice: "Rs 12,400",
+    category: "decor",
+    tag: "Curated",
+    image: "https://images.unsplash.com/photo-1618220179428-22790b46a011?q=80&w=800",
+  },
+  {
+    id: 305,
+    name: "Velvet Lounge Chair",
+    price: 21500,
+    displayPrice: "Rs 21,500",
+    category: "sofa",
+    tag: "Limited",
+    image: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=800",
+  },
+  {
+    id: 306,
+    name: "Sculpted Candle Set",
+    price: 1800,
+    displayPrice: "Rs 1,800",
+    category: "decor",
+    tag: "Gift Ready",
+    image: "https://images.unsplash.com/photo-1602523961358-f9f03dd557db?q=80&w=800",
+  },
+];
+
+export default function ExploreScreen() {
+  const router = useRouter();
+  const { addToCart, totalItemCount } = useCart();
+  const { toast, toastAnim, showToast } = useCartToast();
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchText, setSearchText] = useState("");
+
+  const visibleProducts = useMemo(() => {
+    const search = searchText.trim().toLowerCase();
+
+    return products.filter((item) => {
+      const matchesFilter = activeFilter === "all" || item.category === activeFilter;
+      const matchesSearch =
+        search.length === 0 ||
+        item.name.toLowerCase().includes(search) ||
+        item.tag.toLowerCase().includes(search);
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [activeFilter, searchText]);
+
+  const handleAddToCart = (item: (typeof products)[number]) => {
+    addToCart({
+      id: item.id,
+      name: item.name,
+      description: `${item.tag} piece from the explore collection`,
+      price: item.price,
+      img: item.image,
+      label: item.tag,
+    });
+    showToast(`${item.name} added to cart`);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Explore</Text>
+          <Text style={styles.subtitle}>Discover categories, trends, and fresh arrivals.</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.cartButton}
+          onPress={() => router.push("/cart")}
+          activeOpacity={0.82}>
+          <Ionicons name="bag-outline" size={18} color={COLORS.black} />
+          {totalItemCount > 0 ? (
+            <View style={styles.cartBadge}>
+              <Text style={styles.cartBadgeText}>{totalItemCount > 9 ? "9+" : totalItemCount}</Text>
+            </View>
+          ) : null}
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <View style={styles.searchWrap}>
+          <Ionicons name="search-outline" size={16} color={COLORS.textSecondary} />
+          <TextInput
+            value={searchText}
+            onChangeText={setSearchText}
+            placeholder="Search styles, categories, or materials"
+            placeholderTextColor={COLORS.textSecondary}
+            style={styles.searchInput}
+          />
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+          {filters.map((item) => {
+            const active = item.value === activeFilter;
+            return (
+              <TouchableOpacity
+                key={item.value}
+                style={[styles.filterPill, active && styles.filterPillActive]}
+                onPress={() => setActiveFilter(item.value)}
+                activeOpacity={0.82}>
+                <Text style={[styles.filterText, active && styles.filterTextActive]}>{item.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        <TouchableOpacity
+          style={styles.hero}
+          onPress={() => router.push("/category/decor")}
+          activeOpacity={0.9}>
+          <Image
+            source={{
+              uri: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1200",
+            }}
+            style={styles.heroImage}
+          />
+          <View style={styles.heroOverlay}>
+            <Text style={styles.heroTag}>Editor Curated</Text>
+            <Text style={styles.heroTitle}>Soft textures and sculptural accents</Text>
+            <Text style={styles.heroCopy}>Open the decor collection and shop the full story.</Text>
+          </View>
+        </TouchableOpacity>
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Shop now</Text>
+          <Text style={styles.sectionMeta}>{visibleProducts.length} results</Text>
+        </View>
+
+        <View style={styles.grid}>
+          {visibleProducts.map((item) => (
+            <View key={item.id} style={styles.card}>
+              <View style={styles.imageWrap}>
+                <Image source={{ uri: item.image }} style={styles.cardImage} />
+                <View style={styles.tagPill}>
+                  <Text style={styles.tagText}>{item.tag}</Text>
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.cardPrice}>{item.displayPrice}</Text>
+              <View style={styles.cardFooter}>
+                <TouchableOpacity
+                  style={styles.categoryAction}
+                  onPress={() => router.push(`/category/[slug]?slug=${item.category}`)}
+                  activeOpacity={0.82}>
+                  <Text style={styles.categoryActionText}>Open</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => handleAddToCart(item)}
+                  activeOpacity={0.85}>
+                  <Ionicons name="add" size={16} color={COLORS.black} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+
+      <CartToast
+        toast={toast}
+        toastAnim={toastAnim}
+        bottom={116}
+        onPress={() => router.push("/cart")}
+      />
+      <MainNav activeRoute="explore" />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: COLORS.black,
+  },
+  subtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  cartButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cartBadge: {
+    position: "absolute",
+    top: 5,
+    right: 4,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: COLORS.gold,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 3,
+  },
+  cartBadgeText: {
+    color: "white",
+    fontSize: 9,
+    fontWeight: "800",
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  searchWrap: {
+    marginHorizontal: 24,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 16,
+    height: 52,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: COLORS.black,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  filterRow: {
+    paddingHorizontal: 24,
+    gap: 10,
+    paddingVertical: 18,
+  },
+  filterPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 22,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  filterPillActive: {
+    backgroundColor: COLORS.goldSoft,
+    borderColor: COLORS.gold,
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: COLORS.black,
+  },
+  filterTextActive: {
+    color: COLORS.gold,
+  },
+  hero: {
+    marginHorizontal: 24,
+    borderRadius: 26,
+    overflow: "hidden",
+    height: 280,
+    marginBottom: 24,
+  },
+  heroImage: {
+    width: "100%",
+    height: "100%",
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "flex-end",
+    padding: 24,
+    backgroundColor: "rgba(0,0,0,0.22)",
+  },
+  heroTag: {
+    color: "rgba(255,255,255,0.78)",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  heroTitle: {
+    color: "white",
+    fontSize: 28,
+    fontWeight: "800",
+    lineHeight: 34,
+    marginBottom: 8,
+    maxWidth: 260,
+  },
+  heroCopy: {
+    color: "rgba(255,255,255,0.86)",
+    fontSize: 14,
+    lineHeight: 20,
+    maxWidth: 260,
+  },
+  sectionHeader: {
+    paddingHorizontal: 24,
+    marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: COLORS.black,
+  },
+  sectionMeta: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
+  },
+  grid: {
+    paddingHorizontal: 24,
+    gap: 16,
+  },
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 24,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  imageWrap: {
+    position: "relative",
+  },
+  cardImage: {
+    width: "100%",
+    height: 220,
+    borderRadius: 18,
+  },
+  tagPill: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    backgroundColor: "rgba(22,22,22,0.78)",
+  },
+  tagText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1,
+  },
+  cardTitle: {
+    marginTop: 14,
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.black,
+  },
+  cardPrice: {
+    marginTop: 4,
+    fontSize: 13,
+    fontWeight: "600",
+    color: COLORS.textSecondary,
+  },
+  cardFooter: {
+    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  categoryAction: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: COLORS.goldSoft,
+  },
+  categoryActionText: {
+    color: COLORS.gold,
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  addButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.goldSoft,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bottomSpacer: {
+    height: 130,
   },
 });
