@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,21 +8,18 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  TextInput,
+  StatusBar,
+  Platform
 } from "react-native";
+import { BlurView } from "expo-blur";
 
 const { width } = Dimensions.get("window");
 
 export default function HomeScreen() {
-  // Sample Data with High-End Images
+  const [searchText, setSearchText] = useState("");
   const categories = ["Sofa", "Kitchen", "Decor", "Lighting", "Outdoor"];
   
-  const bannerImages = [
-    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=300",
-    "https://images.unsplash.com/photo-1583847268964-b28dc2f51ac9?q=80&w=300",
-    "https://images.unsplash.com/photo-1594026112284-02bb6f3352fe?q=80&w=300",
-    "https://images.unsplash.com/photo-1550254478-ead40cc54513?q=80&w=300",
-  ];
-
   const products = [
     { name: "Minimal Chair", price: "₹7,999", img: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=400" },
     { name: "Ceramic Vase", price: "₹2,499", img: "https://images.unsplash.com/photo-1581783898377-1c85bf937427?q=80&w=400" },
@@ -32,94 +29,110 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.brandSubtitle}>COLLECTION 2026</Text>
-          <Text style={styles.title}>Shop by category</Text>
-        </View>
-        <TouchableOpacity>
-          <Text style={styles.seeAll}>See all</Text>
-        </TouchableOpacity>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* --- Restored W. SONOMA Luxury Header --- */}
+      <View style={styles.solidTopBar}>
+         <Text style={styles.logoText}>W. SONOMA</Text>
+         <View style={styles.topIcons}>
+            <TouchableOpacity style={styles.headerIconCircle}>
+                <Text style={styles.topEmoji}>👤</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerIconCircle}>
+                <Text style={styles.topEmoji}>👜</Text>
+                <View style={styles.dot} />
+            </TouchableOpacity>
+         </View>
       </View>
 
-      {/* Category Row */}
-      <View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRow}>
-          {categories.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.brandItem}>
-              <Text style={[styles.brandText, index === 0 && styles.activeBrandText]}>{item}</Text>
-              {index === 0 && <View style={styles.activeDot} />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+      {/* --- Functional Search Bar --- */}
+      <View style={styles.searchWrapper}>
+        <View style={styles.searchContainer}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search our luxury collection..."
+            placeholderTextColor="#A0A0A0"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+        </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Featured Banner */}
-        <View style={styles.banner}>
-          <View style={styles.bannerHeader}>
-            <View>
-              <Text style={styles.bannerTitle}>LIVING</Text>
-              <Text style={styles.bannerSub}>Modern Comfort Collection</Text>
-            </View>
-            <TouchableOpacity style={styles.bannerBtn}>
-              <Text style={styles.bannerBtnText}>SHOP</Text>
+        {/* Dynamic Category Row */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
+          {categories.map((item, index) => (
+            <TouchableOpacity key={index} style={[styles.catPill, index === 0 && styles.activePill]}>
+              <Text style={[styles.catText, index === 0 && styles.activeCatText]}>{item}</Text>
             </TouchableOpacity>
-          </View>
+          ))}
+        </ScrollView>
 
-          <View style={styles.bannerProducts}>
-            {bannerImages.map((imgUri, i) => (
-              <View key={i} style={styles.smallCard}>
-                <Image source={{ uri: imgUri }} style={styles.imagePlaceholder} />
-                <Text style={styles.price}>₹3,999</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+        {/* High-End Hero Banner */}
+        <TouchableOpacity activeOpacity={0.9} style={styles.bannerContainer}>
+          <Image 
+            source={{ uri: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800" }} 
+            style={styles.bannerImage} 
+          />
+          <BlurView intensity={60} tint="light" style={styles.bannerGlassInfo}>
+            <Text style={styles.bannerTitle}>THE CLOUD</Text>
+            <Text style={styles.bannerSub}>Spring Collection 2026</Text>
+          </BlurView>
+        </TouchableOpacity>
 
         {/* Product List */}
         <View style={styles.productSection}>
-          <Text style={styles.sectionTitle}>Recommended for you</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
+          <Text style={styles.sectionTitle}>New Arrivals</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: 25, paddingRight: 20 }}>
             {products.map((product, i) => (
-              <TouchableOpacity key={i} style={styles.productCard}>
+              <View key={i} style={styles.productCard}>
                 <Image source={{ uri: product.img }} style={styles.productImage} />
-                <Text style={styles.productName}>{product.name}</Text>
-                <Text style={styles.productPrice}>{product.price}</Text>
-              </TouchableOpacity>
+                <View style={styles.productDetails}>
+                  <Text style={styles.productName}>{product.name}</Text>
+                  <Text style={styles.productPrice}>{product.price}</Text>
+                </View>
+                <TouchableOpacity style={styles.addBtn}>
+                  <Text style={styles.addBtnText}>+</Text>
+                </TouchableOpacity>
+              </View>
             ))}
           </ScrollView>
         </View>
         
-        {/* Extra Space for Bottom Nav */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* Bottom Nav */}
-      <View style={styles.bottomNavContainer}>
-        <View style={styles.bottomNav}>
-          <TouchableOpacity><Text style={styles.navIcon}>🏠</Text></TouchableOpacity>
-          <TouchableOpacity><Text style={styles.navIcon}>🔍</Text></TouchableOpacity>
-          <TouchableOpacity><Text style={styles.navIcon}>❤️</Text></TouchableOpacity>
-          <TouchableOpacity>
-             <View style={styles.cartIconContainer}>
-                <Text style={styles.navIcon}>🛒</Text>
-                <View style={styles.cartBadge} />
-             </View>
+      {/* --- Refined Bottom Nav --- */}
+      <View style={styles.bottomNavWrapper}>
+        <BlurView intensity={100} tint="dark" style={styles.bottomNavBlur}>
+          <TouchableOpacity style={styles.navItem}>
+             <Text style={styles.navEmoji}>🏠</Text>
+             <Text style={styles.navLabel}>Home</Text>
           </TouchableOpacity>
-        </View>
+          <TouchableOpacity style={styles.navItem}>
+             <Text style={styles.navEmoji}>🧭</Text>
+             <Text style={styles.navLabel}>Explore</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem}>
+             <Text style={styles.navEmoji}>✨</Text>
+             <Text style={styles.navLabel}>Wishlist</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem}>
+             <Text style={styles.navEmoji}>👤</Text>
+             <Text style={styles.navLabel}>Profile</Text>
+          </TouchableOpacity>
+        </BlurView>
       </View>
     </SafeAreaView>
   );
 }
 
 const COLORS = {
-  bg: "#F8F8F7",
-  beige: "#E5E0D5",
-  taupe: "#BFB7A6",
+  bg: "#FFFFFF",
   gold: "#AF9461",
-  black: "#1A1A1A",
+  black: "#000000",
+  cardBg: "#F2F2F7",
   textSecondary: "#8E8E8E",
 };
 
@@ -128,168 +141,140 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.bg,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    padding: 25,
-  },
-  brandSubtitle: {
-    fontSize: 10,
-    letterSpacing: 2,
-    color: COLORS.gold,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 22,
-    fontFamily: "serif",
-    color: COLORS.black,
-  },
-  seeAll: {
-    fontSize: 12,
-    fontWeight: "600",
-    textDecorationLine: "underline",
-    color: COLORS.black,
-  },
-  brandRow: {
-    paddingLeft: 25,
-    paddingBottom: 20,
-  },
-  brandItem: {
-    marginRight: 30,
-    alignItems: 'center',
-  },
-  brandText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    letterSpacing: 1,
-  },
-  activeBrandText: {
-    color: COLORS.black,
-    fontWeight: "700",
-  },
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.gold,
-    marginTop: 4,
-  },
-  banner: {
-    backgroundColor: COLORS.beige,
-    marginHorizontal: 20,
-    borderRadius: 4,
-    padding: 20,
-  },
-  bannerHeader: {
+  solidTopBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 25,
+    paddingTop: 15,
+    paddingBottom: 10,
+    backgroundColor: COLORS.bg,
   },
-  bannerTitle: {
-    fontSize: 28,
-    fontFamily: "serif",
-    letterSpacing: 4,
-  },
-  bannerSub: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  bannerBtn: {
-    backgroundColor: COLORS.black,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-  },
-  bannerBtnText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  bannerProducts: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  smallCard: {
-    width: (width - 100) / 4,
-  },
-  imagePlaceholder: {
-    height: 80,
-    width: '100%',
-    backgroundColor: COLORS.taupe,
-    borderRadius: 2,
-    marginBottom: 5,
-  },
-  price: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  productSection: {
-    marginTop: 35,
-    paddingLeft: 25,
-  },
-  sectionTitle: {
+  logoText: {
     fontSize: 16,
-    fontFamily: "serif",
-    marginBottom: 20,
-    letterSpacing: 1,
-  },
-  productCard: {
-    width: 160,
-    marginRight: 20,
-  },
-  productImage: {
-    height: 200,
-    width: 160,
-    backgroundColor: COLORS.taupe,
-    borderRadius: 2,
-    marginBottom: 10,
-  },
-  productName: {
-    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 4,
     color: COLORS.black,
   },
-  productPrice: {
-    fontSize: 13,
-    fontWeight: "700",
-    marginTop: 4,
+  topIcons: {
+    flexDirection: 'row',
+    gap: 15,
   },
-  bottomNavContainer: {
+  headerIconCircle: {
+    width: 35,
+    height: 35,
+    borderRadius: 18,
+    backgroundColor: COLORS.cardBg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topEmoji: { fontSize: 16 },
+  dot: {
     position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    padding: 20,
+    top: 8,
+    right: 8,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.gold,
   },
-  bottomNav: {
+  searchWrapper: {
+    paddingHorizontal: 25,
+    paddingBottom: 15,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    height: 40,
+  },
+  searchIcon: {
+    fontSize: 14,
+    marginRight: 10,
+    opacity: 0.4,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.black,
+    fontWeight: '500',
+  },
+  categoryRow: {
+    paddingLeft: 25,
+    paddingVertical: 10,
+  },
+  catPill: {
+    marginRight: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: COLORS.cardBg,
+  },
+  activePill: { backgroundColor: COLORS.black },
+  catText: { fontSize: 13, fontWeight: "600", color: COLORS.textSecondary },
+  activeCatText: { color: "white" },
+  bannerContainer: {
+    marginHorizontal: 25,
+    height: 350,
+    borderRadius: 30,
+    overflow: 'hidden',
+    marginTop: 10,
+  },
+  bannerImage: { width: '100%', height: '100%' },
+  bannerGlassInfo: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    padding: 20,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  bannerTitle: { fontSize: 24, fontWeight: '800', letterSpacing: 2 },
+  bannerSub: { fontSize: 12, opacity: 0.7, letterSpacing: 1 },
+  productSection: { marginTop: 35 },
+  sectionTitle: { fontSize: 22, fontWeight: "800", marginBottom: 20, paddingHorizontal: 25 },
+  productCard: {
+    width: 200,
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 30,
+    padding: 10,
+    marginRight: 20,
+  },
+  productImage: { height: 220, width: '100%', borderRadius: 25 },
+  productDetails: { padding: 12 },
+  productName: { fontSize: 14, fontWeight: "600" },
+  productPrice: { fontSize: 13, opacity: 0.6, marginTop: 4 },
+  addBtn: {
+    position: 'absolute',
+    bottom: 15,
+    right: 15,
+    width: 36,
+    height: 36,
+    backgroundColor: 'white',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addBtnText: { fontSize: 18, fontWeight: '600' },
+  bottomNavWrapper: {
+    position: 'absolute',
+    bottom: 30,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  bottomNavBlur: {
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingVertical: 15,
-    backgroundColor: COLORS.black,
-    borderRadius: 40,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    width: width * 0.9,
+    paddingVertical: 12,
+    borderRadius: 35,
+    overflow: 'hidden',
   },
-  navIcon: {
-    fontSize: 20,
-    color: 'white',
-  },
-  cartIconContainer: {
-    position: 'relative',
-  },
-  cartBadge: {
-    position: 'absolute',
-    right: -2,
-    top: -2,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.gold,
-    borderWidth: 1,
-    borderColor: COLORS.black,
-  }
+  navItem: { alignItems: 'center', justifyContent: 'center' },
+  navEmoji: { fontSize: 20, marginBottom: 2 },
+  navLabel: { fontSize: 10, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
 });

@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   StatusBar,
 } from "react-native";
-import { useRouter } from "expo-router"; // 1. Import the router
+import { useRouter } from "expo-router";
 
 export default function LandingScreen() {
-  const router = useRouter(); // 2. Initialize the router
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,12 +32,15 @@ export default function LandingScreen() {
         <View style={styles.accentLine} />
         
         <Text style={styles.brand}>
-          WILLIAMS{"\n"}SONOMA
+          Williams{"\n"}<Text style={styles.cursiveBrand}>Sonoma</Text>
         </Text>
 
-        <Text style={styles.tagline}>
-          Shop homes.{"\n"}<Text style={styles.italic}>Not just products.</Text>
-        </Text>
+        <View style={styles.quoteContainer}>
+           <Text style={styles.tagline}>
+             “Shop homes.{"\n"}
+             <Text style={styles.cursiveTagline}>Not just products.”</Text>
+           </Text>
+        </View>
 
         <Text style={styles.subtext}>
           Smart bundles. Real-time suggestions.
@@ -49,9 +52,9 @@ export default function LandingScreen() {
         <TouchableOpacity 
           activeOpacity={0.9} 
           style={styles.button}
-          onPress={() => router.push("/Home")} // 3. Link to Home.tsx
+          onPress={() => router.push("/Home")}
         >
-          <Text style={styles.buttonText}>START SHOPPING     →</Text>
+          <Text style={styles.buttonText}>Enter the Collection      →</Text>
         </TouchableOpacity>
         <Text style={styles.footerLegal}>SINCE 1956 • SONOMA, CALIFORNIA</Text>
       </View>
@@ -60,7 +63,7 @@ export default function LandingScreen() {
 }
 
 const COLORS = {
-  bg: "#F8F8F7",
+  bg: "#FDFDFB", // Brighter, cleaner paper-white
   gold: "#AF9461",
   black: "#1A1A1A",
   textSecondary: "#8E8E8E",
@@ -80,6 +83,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 20,
+    color: COLORS.black,
   },
   dot: {
     position: 'absolute',
@@ -93,63 +97,76 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 35,
+    paddingHorizontal: 40,
   },
   accentLine: {
-    width: 30,
+    width: 40,
     height: 1,
     backgroundColor: COLORS.gold,
-    marginBottom: 25,
+    marginBottom: 30,
   },
   brand: {
-    fontSize: 36,
-    letterSpacing: 8,
+    fontSize: 48, // Slightly larger
     color: COLORS.black,
     fontFamily: "serif",
     marginBottom: 40,
-    lineHeight: 48,
+    lineHeight: 52,
+    fontWeight: "300",
+  },
+  cursiveBrand: {
+    fontStyle: "italic", // Creates the cursive luxury feel
+    color: COLORS.gold,
+    fontWeight: "400",
+  },
+  quoteContainer: {
+    borderLeftWidth: 1,
+    borderLeftColor: COLORS.gold,
+    paddingLeft: 20,
+    marginBottom: 20,
   },
   tagline: {
-    fontSize: 28,
-    lineHeight: 38,
+    fontSize: 26,
+    lineHeight: 36,
     color: COLORS.black,
     fontFamily: "serif",
     fontWeight: "300",
-    marginBottom: 20,
   },
-  italic: {
+  cursiveTagline: {
     fontStyle: "italic",
-    color: COLORS.gold,
+    fontSize: 30, // Cursive looks better slightly larger
+    color: COLORS.black,
   },
   subtext: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
-    letterSpacing: 1.5,
+    letterSpacing: 2,
     textTransform: "uppercase",
+    marginTop: 10,
   },
   bottom: {
-    paddingHorizontal: 25,
-    paddingBottom: 30,
+    paddingHorizontal: 30,
+    paddingBottom: 40,
     alignItems: 'center',
   },
   button: {
     backgroundColor: COLORS.black,
     width: '100%',
-    paddingVertical: 20,
-    borderRadius: 2,
+    paddingVertical: 18,
+    borderRadius: 0, // Sharp edges = higher luxury
     alignItems: "center",
   },
   buttonText: {
     color: "#fff",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 3,
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 4,
     textTransform: "uppercase",
   },
   footerLegal: {
-    marginTop: 20,
-    fontSize: 9,
-    letterSpacing: 2,
+    marginTop: 25,
+    fontSize: 8,
+    letterSpacing: 3,
     color: COLORS.textSecondary,
+    textTransform: "uppercase",
   }
 });
